@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+venv/
+data/**/*.pdf
+embeddings/*
+!embeddings/.gitkeep
+!data/.gitkeep
+.DS_Store
+.claude/
