@@ -1,3 +1,9 @@
+"""
+Download public automotive PDFs for the RAG pipeline.
+Fetches documents from AUTOSAR, ISO 26262, cybersecurity, and OBD-II sources
+into data/ organized by category. Skips files already downloaded.
+"""
+
 import os
 import sys
 import time
@@ -8,7 +14,7 @@ DATA_DIR = Path(os.path.join(os.path.dirname(__file__), "..", "data"))
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (automotive-rag-assistant research tool)"}
 
-# all URLs verified accessible without authentication
+# public documents -- no auth required
 DOCUMENT_CATALOG = {
     "autosar": [
         {
@@ -77,9 +83,11 @@ DOCUMENT_CATALOG = {
 
 
 def download_document(name, url, category):
+    """Download a single PDF. Skips if already on disk."""
     dest = DATA_DIR / category / f"{name}.pdf"
     dest.parent.mkdir(parents=True, exist_ok=True)
 
+    # already have it -- skip
     if dest.exists():
         size_kb = dest.stat().st_size // 1024
         print(f"  skip  {name} ({size_kb}kb)")
@@ -88,6 +96,7 @@ def download_document(name, url, category):
     print(f"  fetch {name}...", end=" ", flush=True)
 
     try:
+        # stream to avoid loading large PDFs into memory at once
         response = requests.get(url, headers=HEADERS, timeout=60, stream=True)
         response.raise_for_status()
 
@@ -97,17 +106,20 @@ def download_document(name, url, category):
 
         size_kb = dest.stat().st_size // 1024
         print(f"ok ({size_kb}kb)")
-        # be respectful to public servers
+
+        # small delay to be respectful to public servers
         time.sleep(1.5)
         return True
 
     except Exception as e:
         print(f"failed: {e}")
+        # clean up partial downloads
         dest.unlink(missing_ok=True)
         return False
 
 
 def main():
+    """Download all documents from the catalog, grouped by category."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     print(f"downloading documents to {DATA_DIR.resolve()}\n")
@@ -122,6 +134,7 @@ def main():
             target.append(doc["name"])
         print()
 
+    # summary
     print(f"downloaded: {len(results['ok'])} documents")
     if results["failed"]:
         print(f"failed: {', '.join(results['failed'])}")

@@ -8,19 +8,7 @@ Uses Ollama for inference and embeddings, ChromaDB for vector storage, and Strea
 
 ## Architecture
 
-```
-PDF files  -->  PyPDF loader  -->  RecursiveTextSplitter (1000/200)
-                                          |
-                                   nomic-embed-text (Ollama)
-                                          |
-                                      ChromaDB
-                                          |
-                              RetrievalQA chain (top 5)
-                                          |
-                                   mistral (Ollama)
-                                          |
-                                   Streamlit UI
-```
+![Architecture](docs/architecture.png)
 
 Key decisions:
 
@@ -45,7 +33,13 @@ git clone https://github.com/<your-username>/automotive-rag-assistant.git
 cd automotive-rag-assistant
 
 python -m venv venv
+
+# Linux / macOS
 source venv/bin/activate
+
+# Windows (PowerShell)
+venv\Scripts\activate
+
 pip install -r requirements.txt
 ```
 
